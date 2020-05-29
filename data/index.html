@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Nessie Dashboard</title>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
+    <link rel="icon" type="image/png" sizes="144x144" href="./favicon-144x144.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="./favicon.ico">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#00878f">
+    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport'>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    
+  <style>
+    .slidecontainer {
+        width: 25%;
+        float : left;
+    }
+
+    .slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 25px;
+        background: #d3d3d3;
+        outline: none;
+        opacity: 0.7;
+        -webkit-transition: .2s;
+        transition: opacity .2s;
+    }
+
+    .slider:hover {
+        opacity: 1;
+    }
+
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        background: orange;
+        cursor: pointer;
+    }
+
+    .slider::-moz-range-thumb {
+        width: 25px;
+        height: 25px;
+        background:orange;
+        cursor: pointer;
+    }
+    
+    body {
+        font-family: 'Roboto', sans-serif;
+        font-size: 12pt;
+        margin: 0;
+        margin-top: 6px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+        /* font-weight: normal; */
+        /* margin: 0px; */
+    }
+
+    button {
+        font-size: 14pt;
+        width: 2em;
+    }
+
+    center {
+        padding: 1em;
+        margin: auto;
+        width: 90%;
+        box-shadow: #777 2px 2px 5px;
+        box-sizing: border-box;
+        clear : left;
+    }
+    p {
+      margin : 5px; 
+    }
+    .icon {
+      width : 40px;
+      height : 40px;
+      margin : 10px; 
+    }
+
+    @media only screen and (max-device-width: 700px) {
+        center {
+      width: 100%;
+      height: 100vh;
+      overflow: auto;
+        }
+    }
+
+  </style>    
+    
+</head>
+
+<body onload="onBodyLoad()">
+  <center>
+    <h1>Nessie Status</h1>
+      <p>Current Time : <span id="currentTime"> --:--:-- </span></p>
+      <p>Indoor Temperature : <span id="indoorTemperature"> -- </span> &#176;C</p>
+      <p>Indoor Humidity : <span id="indoorHumidity"> -- </span> %</p>
+      <p>Connected to : <span id="wifiSSID"> unknown </span>( <span id="wifiRSSI"> -- </span> )</p>
+  </center>
+  <center>
+    <h1>Nessie Control</h1>
+    <div>
+        <img src="./sun.gif" id="modeDayIcon" alt="Verwarming aan" class="icon">
+        <img src="./moon.gif" id="modeNightIcon" alt="Verwarming uit" class="icon">
+        <img src="./snowflake.gif" id="modeFrostIcon" alt="Vorstbeveiliging" class="icon">
+        <img src="./clock.gif" id="modeClockIcon" alt="Programma" class="icon">
+    </div>
+    <div style="clear:left">
+      <p style="float:left"> Desired Temperature :</p>
+      <div class="slidecontainer">
+        <input type="range" min="10" max="28" value="22" step="0.1" class="slider" id="targetSetpointRange">
+      </div>
+      <p style="float:left"><span id="targetSetpoint">--</span>&#176;C</p>
+    </div>
+    <div style="clear:left">
+      <p style="float:left"> HeatPercentage :</p>
+      <div class="slidecontainer">
+        <input type="range" min="0" max="100" value="75" class="slider" id="heatPercentageRange">
+      </div>
+      <p style="float:left"><span id="heatPercentage">--</span>%</p>
+    </div>
+    <p style="clear:left"></p>
+  </center>
+  <center>
+      <h1>Nessie History</h1>
+      <div id="chart_div"></div>
+      <div class="dateselect">
+          <div id="date"></div>
+          <button id="prev">&lt;</button>
+          <button id="next">&gt;</button><br>
+          <button id="zoomout">-</button>
+          <button id="zoomin">+</button><br>
+          <button id="reset" style="width: 4.4em;">Reset</button><br>
+          <button id="refresh" style="width: 4.4em;">Refresh</button>
+      </div>
+  </center>
+
+  <script src="./temperatureGraph.js"></script>
+  <script src="./thermostatControl.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,34 @@
+8/2018 V4_2
+************
+- eerste versie van thermostaatregeling
+
+14/4/2018 V4_1
+**************
+- target min/max aangepast, bij mode FROST werkte niet correct
+- target voor FROST/OFF toegevoegd, om de ketel uit te schakelen (0.66V)
+- meting A0 toegevoegd in de /nest request (dit is identiek aan de stuurspanning op de ketel)
+
+27/3/2018 V4_1
+***************
+- logging interval 5minutes
+- temp evolution in UI (up/down arrow) : based on temp 5minutes earlier
+- hc_heatPercentageDay, Night and FastHeat individually settable
+- automatic daylight savings (in ntp.cpp)
+
+
+15/2/2018 V4NoAlexa
+*******************
+diff with v3 :
+- added support for targetSetpoint
+- simplified fonts
+- code cleanup
+
+this is basically the same as V4Alexa without alexa_setup & alexa_loop
+so the mqtt connection to AWS IOT is not setup, preventing control over alexa/AWS lambda/IOT
+
+
+issue  : 
+
+http://mynest/list?dir=/
+hiermee kan je een directory listing bekomen
+http://mynest/cert.der : je kan de file gewoon downloaden!
