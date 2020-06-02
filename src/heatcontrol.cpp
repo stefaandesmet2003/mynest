@@ -9,6 +9,8 @@ zomermodus : als de binnentemperatuur > 25°C -> uitschakelen
 #include "heatcontrol.h"
 #include "sigma_delta.h"
 #include "myntp.h"
+#include "config.h"
+#include "cloudlog.h"
 #include "TimeLib.h" // for the functions day(), month(), year() etc
 #include <ESP8266WebServer.h>
 #include <FS.h> // file functions, to use with SPIFFS object
@@ -47,10 +49,7 @@ uint32_t lastSensorMillis = -SENSOR_READ_INTERVAL;
 uint32_t lastOutdoorDataMillis = -OUTDOOR_LOG_INTERVAL; // wunderground updates every 10 minutes
 float indoorHum=0.0, indoorTemp=0.0, outdoorTemp=0.0; // actual sensor data being used
 
-// logging
-bool isLogging = false; // from config.txt, updated by main:initConfig()
 uint32_t lastLogMillis = -LOGGING_INTERVAL;
-
 
 #define NBR_INDOORTEMP_POINTS 16
 float indoorTemps[NBR_INDOORTEMP_POINTS]; // avg over 15 SENSOR_READ_INTERVAL is used for the UI
@@ -61,10 +60,6 @@ float hc_TargetSetpoint = TEMP_SETPOINT_DEFAULT_DAY;
 uint8_t hc_ThermostatMode = MODE_CLOCK;
 // learning thermostat
 // todo : adapt schedule to learning
-// these defaults will be overwritten by config.txt
-uint8_t heat_default_day = HEAT_DEFAULT_DAY;
-uint8_t heat_default_night = HEAT_DEFAULT_NIGHT;
-uint8_t heat_default_fastheat = HEAT_DEFAULT_FASTHEAT; 
 uint8_t hc_HeatPercentageDay;
 uint8_t hc_HeatPercentageNight;
 uint8_t hc_HeatPercentageFastHeat;
@@ -258,7 +253,6 @@ void handleNestRequest()
 {
   uint32_t heatPercentage = heat_default_day;
   float targetSetpoint = TEMP_SETPOINT_DEFAULT_DAY;
-  int volume = 5;
   int i;
   String message;
   uint32_t dt = ntp_GetUnixDateTime(); // browser does local time correction
@@ -379,19 +373,14 @@ static void run7021()
   }
   
   // logging every LOGGING_INTERVAL
-  if ((isLogging) && (currentMillis - lastLogMillis > LOGGING_INTERVAL)) {
-    // only log to file when we have a valid NTP time
-    uint32_t actualTime = ntp_GetUnixDateTime();
+  if ((log_cloud || log_local) && (currentMillis - lastLogMillis > LOGGING_INTERVAL)) {
+
     lastLogMillis = currentMillis;
-    if (actualTime) 
-    {
-      File tempLog = SPIFFS.open("/temp.csv", "a"); // Write the time and the temperature to the csv file
-      tempLog.print(actualTime);
-      tempLog.print(',');
-      tempLog.print(indoorTemp);
-      tempLog.print(',');
-      tempLog.print(indoorHum);
-      tempLog.print(',');
+
+    uint8_t heatPercentage = hc_GetHeatPercentage();
+    uint32_t actualTime = ntp_GetUnixDateTime();
+    String logString = String(actualTime) + "," + String(indoorTemp) + "," + String(indoorHum)
+       + "," + "," + String(heatPercentage);
       // log outdoor weather data from wunderground.com
       /*
       if (currentMillis - lastOutdoorDataMillis > OUTDOOR_LOG_INTERVAL) 
@@ -403,10 +392,14 @@ static void run7021()
         tempLog.print(newOutdoorTemp); 
       }
       */
-      tempLog.print(',');
-      tempLog.print(hc_GetHeatPercentage()); // log the heatPercentage to monitor the algorithm
+    if (log_local) {
+      File tempLog = SPIFFS.open("/temp.csv", "a"); // Write the time and the temperature to the csv file
+      tempLog.print(logString);
       tempLog.println();
       tempLog.close();
+    }
+    if (log_cloud) {
+      cloudlog_log(logString);
     }
   }
 } // run7021

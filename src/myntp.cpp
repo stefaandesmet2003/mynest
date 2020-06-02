@@ -90,7 +90,7 @@ void runNTP()
           // subtract seventy years:
           lastNtpUnixTime = NTPTime - seventyYears;
           // calculate correction
-          uint32_t networkDelay; // = ((lastNtpReponse - lastNtpRequest) - (TxTS - RxTS)) / 2
+          // uint32_t networkDelay; // = ((lastNtpReponse - lastNtpRequest) - (TxTS - RxTS)) / 2
           uint32_t fractionTxTS = (packetBuffer[44] << 24) | (packetBuffer[45] << 16) | (packetBuffer[46] << 8) | packetBuffer[47];
           fractionTxTS = fractionTxTS / 4294967; // fraction in ms
           // lastNtpResponseMillis = (millis()+lastNtpRequestMillis) >>1; // with networkDelay correction

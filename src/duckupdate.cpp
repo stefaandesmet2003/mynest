@@ -5,21 +5,22 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 
+#include "config.h"
+
 #define ONE_HOUR    3600000UL
 #define ONE_DAY     24*ONE_HOUR
 #define DUCK_UPDATE_INTERVAL ONE_DAY
 
+WiFiClient client;
+
 // duckdns auto-update
-String duck_domain;
-String duck_token;
 String new_ip;
 String old_ip = "0.0.0.0";
-
 
 uint32_t duckUpdateMillis = -DUCK_UPDATE_INTERVAL; // force check at startup
 
 // check duckDNS every day (DUCK_UPDATE_INTERVAL)
-void runDuck (void) {
+void duck_loop (void) {
 
   if ((millis() - duckUpdateMillis) > DUCK_UPDATE_INTERVAL) {
 
@@ -40,10 +41,8 @@ void runDuck (void) {
     }
 
     HTTPClient http;
-    Serial.print("[HTTP] begin...\n");
-  
     // ######## GET PUBLIC IP ######## //
-    http.begin("http://ipv4bot.whatismyipaddress.com/");
+    http.begin(client, "http://ipv4bot.whatismyipaddress.com/");
     int httpCode = http.GET();
     if (httpCode > 0) {
       if(httpCode == HTTP_CODE_OK) {
@@ -65,9 +64,8 @@ void runDuck (void) {
       String duck_url = "http://www.duckdns.org/update?domains="+ duck_domain + "&token=" + duck_token;
       Serial.printf ("old IP was = %s \n", old_ip.c_str());
       Serial.println("updating duckDNS now : " + duck_url);
-      if (http.begin(duck_url)) 
-      {  // HTTP
-    
+      if (http.begin(client, duck_url)) 
+      {    
         // start connection and send HTTP header
         int httpCode = http.GET();
     
@@ -83,14 +81,14 @@ void runDuck (void) {
           }
         } 
         else {
-          Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+          Serial.printf("duck update KO, error: %s\n", http.errorToString(httpCode).c_str());
         }
     
         http.end();
       } 
       else 
       {
-        Serial.printf("[HTTP] Unable to connect\n");
+        Serial.printf("duckdns KO : unable to connect\n");
       }
     }
     else {
@@ -102,4 +100,4 @@ void runDuck (void) {
     // too early, nothing to do
   }
   
-} // runDuck
+} // duck_loop

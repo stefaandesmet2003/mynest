@@ -12,4 +12,7 @@ void runNTP();
 uint32_t ntp_GetDateTime();
 uint32_t ntp_GetUnixDateTime();
 
+// server handler
+void handleNTPRequest();
+
 #endif // _MYNTP_H_

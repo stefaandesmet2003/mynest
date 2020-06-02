@@ -26,6 +26,9 @@ float hc_GetIndoorHum();
 #define TEMP_TREND_DECREASING 2
 uint8_t hc_GetIndoorTempTrend(); // returns any of the 3 trend values
 
+// server handler
+void handleNestRequest();
+
 #endif // _HEATCONTROL_H_
 
 

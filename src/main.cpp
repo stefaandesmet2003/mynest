@@ -14,21 +14,6 @@ ESP8266HTTPUpdateServer httpUpdater;
 File fsUploadFile;                      // a File variable to temporarily store the received file
 ESP8266WiFiMulti wifiMulti;             // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
                                        
-String ota_name, ota_pass;
-// Domain name for the mDNS responder & used as hostname;
-// make this different from OTAName otherwise http://mdnsName/ doesn't work
-String mdns_name; 
-String www_user, www_pass;                                        
-
-// add Wi-Fi networks you want to connect to
-String wifi_ssid, wifi_pass;
-
-// duckdns auto-update
-extern String duck_domain;
-extern String duck_token;
-
-extern bool isLogging;
-extern uint8_t heat_default_day, heat_default_night, heat_default_fastheat;
 bool rebootRequest = false;
 uint32_t rebootMillis;
 
@@ -40,9 +25,7 @@ uint32_t rebootMillis;
 #include "heatcontrol.h"
 #include "ui.h" // display stuff
 #include "duckupdate.h"
-
-extern void handleNTPRequest();
-extern void handleNestRequest();
+#include "config.h" // configs
 
 /**************************************************************/
 /*   HELPER FUNCTIONS                                         */
@@ -206,80 +189,6 @@ void handleNotFound() {
   }
 } // handleNotFound
 
-// return 0 = OK, -1 = ERROR!
-int initConfig() {
-  File configFile;
-  String line;
-  String key, val;
-  int sepAt;  
-  configFile = SPIFFS.open("/config.txt","r");
-
-  if (!configFile) {
-    Serial.println("ERROR - config.txt missing");
-    return (-1);
-  }
-  while (1) {
-    line = configFile.readStringUntil('\n');
-    if (line == "") {
-      break;
-    }
-
-    sepAt = line.indexOf(':');
-    if (sepAt == -1) continue;
-
-    key = line.substring(0, sepAt);
-    val = line.substring(sepAt + 1);
-    Serial.println(key + " = " + val);
-
-    if (key == "wifi_ssid") {
-      wifi_ssid = val;
-    }
-    else if (key == "wifi_pass") {
-      wifi_pass = val;
-    }
-    else if (key == "ota_name") {
-      ota_name = val;
-    }
-    else if (key == "ota_pass") {
-      ota_pass = val;
-    }
-    else if (key == "www_user") {
-      www_user = val;
-    }
-    else if (key == "www_pass") {
-      www_pass = val;
-    }
-    else if (key == "mdns_name") {
-      mdns_name = val;
-    }
-    else if (key == "duck_domain") {
-      duck_domain = val;
-    }
-    else if (key == "duck_token") {
-      duck_token = val;
-    }
-    else if (key == "logging") {
-      isLogging = (val.toInt()!=0)?true:false;
-    }
-    else if (key == "heat_day") {
-      heat_default_day = (uint8_t) val.toInt();
-    }
-    else if (key == "heat_night") {
-      heat_default_night = (uint8_t) val.toInt();
-    }
-    else if (key == "heat_fastheat") {
-      heat_default_fastheat = (uint8_t) val.toInt();
-    }
-
-/*
-heat_day:70
-heat_night:0
-heat_frost:0
-heat_fastheat:80
-*/    
-  }
-  return 0;
-} // initConfig
 
 /*****************************************************************************************************************************
   WIFI STUFF 
@@ -426,6 +335,19 @@ void startServer() {
     rebootMillis = millis() + 3000; // reboot delay
   });
 
+  server.on("/reload_config", HTTP_GET, [](){
+    if(!server.authenticate((const char*) www_user.c_str(), (const char*) www_pass.c_str()))
+      return server.requestAuthentication();  
+    // authentication OK --> continue
+    if (config_load() == 0) {
+      server.send(200,"text/plain", "config reloaded!");
+    }
+    else {
+      server.send(200,"text/plain", "config failed! config.txt missing?");
+    }
+  });
+
+
   server.on("/nest", HTTP_GET, [](){
     if(!server.authenticate((const char*) www_user.c_str(), (const char*) www_pass.c_str()))
       return server.requestAuthentication();  
@@ -457,7 +379,7 @@ void setup()
   
   Serial.begin(115200);        // Start the Serial communication to send messages to the computer
   startSPIFFS();               // Start the SPIFFS and list all contents
-  initCode = initConfig();
+  initCode = config_load();
   hc_setup();
   keypad_setup();
   ui_setup();    
@@ -484,7 +406,7 @@ void loop()
   keypad_loop();          // scan touch keys
   ui_loop();              // display user interface
   hc_loop();              // heating control
-  runDuck();              // duckDNS update
+  duck_loop();            // duckDNS update
 
   if (rebootRequest) {
     if (millis() > rebootMillis) {

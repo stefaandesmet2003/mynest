@@ -106,7 +106,6 @@ void ui_loop()
 {
   // for testing
   byte b;
-  char serbuf[10];
 
   if(Serial.available())
   {
@@ -150,7 +149,7 @@ void ui_loop()
     return;
   }
   if (uiUpdate) {
-    nextUpdateTimeout = ui.update();
+    nextUpdateTimeout = (int16_t) ui.update();
     // test : avoid 30fps updates on a fixed frame
     if (ui.getUiState()->frameState == FIXED) {
       nextUpdateTimeout = 500; // 2 fps when not in transition
@@ -162,7 +161,7 @@ void ui_loop()
     uiUpdate = false;
   }
   else {
-    if ((nextUpdateTimeout < 0) || (millis() - updateMillis) > nextUpdateTimeout) {
+    if ((nextUpdateTimeout < 0) || (millis() - updateMillis) > (uint32_t) nextUpdateTimeout) {
       uiUpdate = true;
     }
   }
@@ -195,7 +194,7 @@ void notifyKeyEvent(uint8_t keyEvent )
       else if (keyEvent == KEY_2) { // M  --> targetSetpoint +0.1°C
         hc_SetTargetSetpoint(hc_GetTargetSetpoint()+0.1);
       }
-      else if (keyEvent == KEY_1 | KEY_2 | KEY_3) {
+      else if (keyEvent == (KEY_1 | KEY_2 | KEY_3)) {
         uiState = HOME_LOCKED;
         ui.transitionToFrame(FRAME_HOME);
       }
@@ -219,7 +218,7 @@ void notifyKeyEvent(uint8_t keyEvent )
         if (heatPercentage <= 95)
           hc_SetHeatPercentage(heatPercentage+5);
       }
-      else if (keyEvent == KEY_1 | KEY_2 | KEY_3) {
+      else if (keyEvent == (KEY_1 | KEY_2 | KEY_3)) {
         uiState = HOME_LOCKED;
         ui.transitionToFrame(FRAME_HOME);
       }
