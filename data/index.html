@@ -6,10 +6,8 @@
     <link href='https://fonts.googleapis.com/css?family=Roboto:300' rel='stylesheet' type='text/css'>
     <link rel="icon" type="image/png" sizes="144x144" href="./favicon-144x144.png">
     <link rel="icon" type="image/png" sizes="96x96" href="./favicon.ico">
-    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#00878f">
     <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport'>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     
   <style>
     .slidecontainer {
@@ -82,7 +80,7 @@
       height : 40px;
       margin : 10px; 
     }
-
+    /*
     @media only screen and (max-device-width: 700px) {
         center {
       width: 100%;
@@ -90,12 +88,23 @@
       overflow: auto;
         }
     }
+    */
 
   </style>    
     
 </head>
 
 <body onload="onBodyLoad()">
+
+  <!--script src="./temperatureGraph.js"--></script>
+  <script src="./thermostatControl.js"></script>
+  <script>
+    function onBodyLoad() {
+      initControl();
+      //initGraph();
+    }
+  </script>
+
   <center>
     <h1>Nessie Status</h1>
       <p>Current Time : <span id="currentTime"> --:--:-- </span></p>
@@ -127,23 +136,6 @@
     </div>
     <p style="clear:left"></p>
   </center>
-  <center>
-      <h1>Nessie History</h1>
-      <div id="chart_div"></div>
-      <div class="dateselect">
-          <div id="date"></div>
-          <button id="prev">&lt;</button>
-          <button id="next">&gt;</button><br>
-          <button id="zoomout">-</button>
-          <button id="zoomin">+</button><br>
-          <button id="reset" style="width: 4.4em;">Reset</button><br>
-          <button id="refresh" style="width: 4.4em;">Refresh</button>
-      </div>
-  </center>
-
-  <script src="./temperatureGraph.js"></script>
-  <script src="./thermostatControl.js"></script>
 
 </body>
-
 </html>

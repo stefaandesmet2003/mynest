@@ -11,7 +11,8 @@ let wifiSSID;
 let wifiRSSI;
 let modeDayIcon, modeNightIcon, modeFrostIcon, modeClockIcon;
 
-function onBodyLoad() {
+// call after body load
+function initControl() {
   targetSetpointSlider = document.getElementById("targetSetpointRange");
   targetSetpointTxt = document.getElementById("targetSetpoint");
   targetSetpointTxt.innerHTML = targetSetpointSlider.value;
